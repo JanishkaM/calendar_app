@@ -1,5 +1,6 @@
 export interface Holiday {
-  date: string;
+  month: number; // 1 = January, 12 = December
+  date: number;  // Day of month
   day: string;
   name: string;
   description: string;
@@ -10,7 +11,8 @@ export interface Holiday {
 
 export const holidays: Holiday[] = [
   {
-    date: "2026-01-03",
+    month: 1,
+    date: 3,
     day: "Saturday",
     name: "Duruthu Full Moon Poya Day",
     description: "Commemorates the Buddha’s first visit to Sri Lanka.",
@@ -19,7 +21,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-01-15",
+    month: 1,
+    date: 15,
     day: "Thursday",
     name: "Tamil Thai Pongal Day",
     description: "Hindu harvest festival thanking the Sun God.",
@@ -28,7 +31,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: true
   },
   {
-    date: "2026-02-01",
+    month: 2,
+    date: 1,
     day: "Sunday",
     name: "Nawam Full Moon Poya Day",
     description: "Marks key events in early Buddhist history.",
@@ -37,7 +41,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-02-04",
+    month: 2,
+    date: 4,
     day: "Wednesday",
     name: "Independence Day",
     description: "Celebrates Sri Lanka’s independence in 1948.",
@@ -46,7 +51,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: true
   },
   {
-    date: "2026-02-15",
+    month: 2,
+    date: 15,
     day: "Sunday",
     name: "Maha Sivarathri Day",
     description: "Hindu religious observance dedicated to Lord Shiva.",
@@ -55,7 +61,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-03-02",
+    month: 3,
+    date: 2,
     day: "Monday",
     name: "Medin Full Moon Poya Day",
     description: "Commemorates the Buddha’s visit to his family.",
@@ -64,7 +71,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-03-21",
+    month: 3,
+    date: 21,
     day: "Saturday",
     name: "Id-Ul-Fitr",
     description: "Islamic festival marking the end of Ramadan.",
@@ -73,7 +81,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-04-01",
+    month: 4,
+    date: 1,
     day: "Wednesday",
     name: "Bak Full Moon Poya Day",
     description: "Associated with the Buddha’s second visit to Sri Lanka.",
@@ -82,7 +91,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-04-03",
+    month: 4,
+    date: 3,
     day: "Friday",
     name: "Good Friday",
     description: "Christian observance of the crucifixion of Jesus Christ.",
@@ -91,7 +101,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-04-13",
+    month: 4,
+    date: 13,
     day: "Monday",
     name: "Day Prior to Sinhala and Tamil New Year",
     description: "Traditional preparation day before the New Year.",
@@ -100,7 +111,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: true
   },
   {
-    date: "2026-04-14",
+    month: 4,
+    date: 14,
     day: "Tuesday",
     name: "Sinhala and Tamil New Year Day",
     description: "Traditional New Year celebrated by Sinhala and Tamil communities.",
@@ -109,7 +121,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: true
   },
   {
-    date: "2026-05-01",
+    month: 5,
+    date: 1,
     day: "Friday",
     name: "Vesak Full Moon Poya Day",
     description: "Celebrates the birth, enlightenment, and passing of the Buddha.",
@@ -118,7 +131,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-05-01",
+    month: 5,
+    date: 1,
     day: "Friday",
     name: "May Day",
     description: "International Workers’ Day recognizing labor rights.",
@@ -127,7 +141,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: true
   },
   {
-    date: "2026-05-02",
+    month: 5,
+    date: 2,
     day: "Saturday",
     name: "Day Following Vesak Full Moon Poya Day",
     description: "Continuation of Vesak religious observances.",
@@ -136,7 +151,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: true
   },
   {
-    date: "2026-05-28",
+    month: 5,
+    date: 28,
     day: "Thursday",
     name: "Id-Ul-Alha",
     description: "Islamic festival honoring devotion and sacrifice.",
@@ -145,7 +161,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-05-30",
+    month: 5,
+    date: 30,
     day: "Saturday",
     name: "Adhi Poson Full Moon Poya Day",
     description: "Special Poson observance highlighting Buddhist heritage.",
@@ -154,7 +171,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-06-29",
+    month: 6,
+    date: 29,
     day: "Monday",
     name: "Poson Full Moon Poya Day",
     description: "Commemorates the introduction of Buddhism to Sri Lanka.",
@@ -163,7 +181,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-07-29",
+    month: 7,
+    date: 29,
     day: "Wednesday",
     name: "Esala Full Moon Poya Day",
     description: "Marks the Buddha’s first sermon.",
@@ -172,7 +191,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-08-26",
+    month: 8,
+    date: 26,
     day: "Wednesday",
     name: "Milad-Un-Nabi",
     description: "Celebrates the birth of Prophet Muhammad.",
@@ -181,7 +201,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: true
   },
   {
-    date: "2026-08-27",
+    month: 8,
+    date: 27,
     day: "Thursday",
     name: "Nikini Full Moon Poya Day",
     description: "Associated with the establishment of the Bhikkhuni order.",
@@ -190,7 +211,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-09-26",
+    month: 9,
+    date: 26,
     day: "Saturday",
     name: "Binara Full Moon Poya Day",
     description: "Highlights the role of Buddhist nuns.",
@@ -199,7 +221,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-10-25",
+    month: 10,
+    date: 25,
     day: "Sunday",
     name: "Vap Full Moon Poya Day",
     description: "Marks the Buddha’s return from heavenly realms.",
@@ -208,7 +231,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-11-08",
+    month: 11,
+    date: 8,
     day: "Sunday",
     name: "Deepavali",
     description: "Hindu festival of lights symbolizing victory of good over evil.",
@@ -217,7 +241,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-11-24",
+    month: 11,
+    date: 24,
     day: "Tuesday",
     name: "Il Full Moon Poya Day",
     description: "Associated with spreading Buddhism beyond Sri Lanka.",
@@ -226,7 +251,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-12-23",
+    month: 12,
+    date: 23,
     day: "Wednesday",
     name: "Unduvap Full Moon Poya Day",
     description: "Commemorates the arrival of the Sacred Bo Sapling.",
@@ -235,7 +261,8 @@ export const holidays: Holiday[] = [
     mercantileHoliday: false
   },
   {
-    date: "2026-12-25",
+    month: 12,
+    date: 25,
     day: "Friday",
     name: "Christmas Day",
     description: "Christian festival celebrating the birth of Jesus Christ.",

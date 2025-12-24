@@ -14,7 +14,7 @@ function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
 
 export default function LoadingIcon() {
   return (
-    <div className="grid place-items-center h-screen w-full absolute top-0 left-0 bg-white dark:bg-black">
+    <div className="grid place-items-center h-screen w-full fixed top-0 left-0 bg-white dark:bg-black z-50">
       <Spinner/>
     </div>
   )

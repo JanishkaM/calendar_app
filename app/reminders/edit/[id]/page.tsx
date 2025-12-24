@@ -13,14 +13,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { usePWAStatus } from "@/utils/CheckPWA";
 import { createClient } from "@/utils/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import { useParams } from "next/navigation";
-import { redirect, RedirectType } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function Page({}) {
+  const router = useRouter();
+  const { isInstalled } = usePWAStatus({ redirectToInstall: false });
+
+  useEffect(() => {
+    if (!isInstalled) {
+      router.replace("/install");
+    }
+  }, [isInstalled, router]);
   const supabase = createClient();
   const params = useParams<{ id: string }>();
   const [reminderData, setReminderData] = useState({
@@ -87,7 +96,7 @@ export default function Page({}) {
     }
 
     toast.success("Reminder saved successfully!");
-    redirect(`/`, RedirectType.push);
+    router.push(`/`);
   };
 
   const handleDelete = async () => {
@@ -102,7 +111,7 @@ export default function Page({}) {
     }
 
     toast.success("Reminder deleted successfully!");
-    redirect(`/`, RedirectType.push);
+    router.push(`/`);
   };
 
   return (
@@ -143,7 +152,12 @@ export default function Page({}) {
           <Label htmlFor="reminder_priority" className="mb-2">
             Reminder Priority*
           </Label>
-          <Select>
+          <Select
+            value={reminderData.priority}
+            onValueChange={(value) =>
+              setReminderData({ ...reminderData, priority: value })
+            }
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select a priority" />
             </SelectTrigger>
@@ -164,8 +178,13 @@ export default function Page({}) {
         </div>
       </section>
       <section className="mt-21 bg-accent p-4 rounded-md flex flex-col justify-center items-center">
-        <Label className="text-center mb-4">Delete this reminder permanently.</Label>
-        <Button className="bg-red-500 hover:bg-red-600" onClick={() => handleDelete()}>
+        <Label className="text-center mb-4">
+          Delete this reminder permanently.
+        </Label>
+        <Button
+          className="bg-red-500 hover:bg-red-600"
+          onClick={() => handleDelete()}
+        >
           Delete Reminder
         </Button>
       </section>

@@ -13,7 +13,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { usePWAStatus } from "@/utils/CheckPWA";
 import { createClient } from "@/utils/supabase/client";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -23,13 +22,7 @@ import { toast } from "sonner";
 export default function Page({}) {
   const supabase = createClient();
   const router = useRouter();
-  const { isInstalled } = usePWAStatus({ redirectToInstall: false });
 
-  useEffect(() => {
-    if (!isInstalled) {
-      router.replace("/install");
-    }
-  }, [isInstalled, router]);
 
   const params = useParams<{ date: string }>();
   const parsedDate = useMemo(

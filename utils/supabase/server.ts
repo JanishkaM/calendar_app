@@ -16,18 +16,14 @@ export async function createClient() {
           try {
             cookieStore.set({ name, value, ...options })
           } catch (error) {
-            // The `set` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            console.log('The `set` method was called from a Server Component.', error)
           }
         },
         remove(name: string, options?: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options, maxAge: 0 })
           } catch (error) {
-            // The `delete` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
+            console.log('The `remove` method was called from a Server Component.', error)
           }
         },
       },

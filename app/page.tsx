@@ -31,13 +31,14 @@ const months = [
 
 export default function Home() {
   const router = useRouter();
-  const { isInstalled } = usePWAStatus({ redirectToInstall: false });
+  const { isInstalled, isReady } = usePWAStatus({ redirectToInstall: false });
 
   useEffect(() => {
-    if (!isInstalled) {
+    if (isReady && !isInstalled) {
       router.replace("/install");
     }
-  }, [isInstalled, router]);
+  }, [isInstalled, isReady, router]);
+
   const calendarYear = Number(process.env.NEXT_PUBLIC_CALENDAR_YEAR);
   const supabase = useMemo(() => createClient(), []);
   const [loading, setLoading] = useState<boolean>(true);
@@ -153,6 +154,11 @@ export default function Home() {
     const selectedDate = Array.isArray(date) ? date[0] : date;
     router.push(`/reminders/${selectedDate.toISOString()}`);
   };
+
+  // Avoid flashing the login UI before we know install state.
+  if (!isReady || !isInstalled) {
+    return <LoadingIcon />;
+  }
 
   return (
     <>

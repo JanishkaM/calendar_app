@@ -67,14 +67,19 @@ export function usePWAStatus(options: UsePWAStatusOptions = {}) {
     [options.installPath, options.redirectToInstall]
   );
 
-  const [isInstalled, setIsInstalled] = useState(() => detectStandalone());
+  // Keep first render deterministic (prevents UI flashes + hydration mismatches).
+  const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS] = useState(() => detectIOS());
+  const [isReady, setIsReady] = useState(false);
 
   // Install status tracking
   useEffect(() => {
     const update = () => {
       const standalone = detectStandalone();
       setIsInstalled(standalone);
+
+      // Mark ready after we have a client-derived value.
+      setIsReady(true);
 
       if (!standalone && redirectToInstall) {
         // Avoid redirect loops and allow the install page itself
@@ -104,5 +109,5 @@ export function usePWAStatus(options: UsePWAStatusOptions = {}) {
     registerServiceWorkerOnce();
   }, []);
 
-  return { isInstalled, isIOS };
+  return { isInstalled, isIOS, isReady };
 }

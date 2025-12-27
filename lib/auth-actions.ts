@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 import { createClient } from "@/utils/supabase/server";
 
@@ -66,9 +67,19 @@ export async function signout() {
 
 export async function signInWithGoogle() {
   const supabase = await createClient();
+
+  const h = await headers();
+  const forwardedProto = h.get("x-forwarded-proto");
+  const forwardedHost = h.get("x-forwarded-host");
+  const host = forwardedHost ?? h.get("host");
+  const origin =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    (host ? `${forwardedProto ?? "https"}://${host}` : undefined);
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
+      ...(origin ? { redirectTo: `${origin}/auth/callback` } : {}),
       queryParams: {
         access_type: "offline",
         prompt: "consent",

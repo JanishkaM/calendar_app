@@ -8,6 +8,13 @@ export async function GET(request: NextRequest) {
   const next = requestUrl.searchParams.get('next') ?? '/'
   const cookieStore = await cookies()
 
+  const forwardedProto = request.headers.get('x-forwarded-proto')
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const host = forwardedHost ?? request.headers.get('host')
+  const origin = host
+    ? `${forwardedProto ?? requestUrl.protocol.replace(':', '')}://${host}`
+    : requestUrl.origin
+
   if (code) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -30,5 +37,5 @@ export async function GET(request: NextRequest) {
     await supabase.auth.exchangeCodeForSession(code)
   }
 
-  return NextResponse.redirect(new URL(next, requestUrl.origin))
+  return NextResponse.redirect(new URL(next, origin))
 }

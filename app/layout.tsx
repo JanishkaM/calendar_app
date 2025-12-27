@@ -5,7 +5,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import ThemeTrigger from "@/components/theme-trigger";
 import Footer from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
-import CoverImage from "@/components/cover-image";
 
 type RootLayoutProps = {
   children: ReactNode;

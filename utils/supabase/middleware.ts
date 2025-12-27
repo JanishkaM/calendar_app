@@ -17,7 +17,6 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options?: CookieOptions) {
-          request.cookies.set(name, value)
           response = NextResponse.next({
             request: {
               headers: request.headers,
@@ -30,7 +29,6 @@ export async function updateSession(request: NextRequest) {
           })
         },
         remove(name: string, options?: CookieOptions) {
-          request.cookies.set(name, '')
           response = NextResponse.next({
             request: {
               headers: request.headers,

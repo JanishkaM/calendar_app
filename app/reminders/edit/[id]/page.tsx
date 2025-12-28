@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingIcon from "@/components/loading-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function Page({}) {
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const params = useParams<{ id: string }>();
@@ -45,6 +47,7 @@ export default function Page({}) {
 
   useEffect(() => {
     const fetchReminder = async () => {
+      setLoading(true);
       const { data, error } = await supabase
         .from("reminders")
         .select("*")
@@ -65,12 +68,14 @@ export default function Page({}) {
         console.log("Fetched reminder data:", data);
         return;
       }
+      setLoading(false);
       toast.error("Reminder not found.");
     };
     fetchReminder();
   }, [params.id, supabase]);
 
   const handleSubmit = async () => {
+    setLoading(true);
     if (!reminderData.title || reminderData.title.trim() === "") {
       console.log(reminderData);
       toast.error("Please enter a title for the reminder.");
@@ -88,10 +93,12 @@ export default function Page({}) {
     }
 
     toast.success("Reminder saved successfully!");
-    router.push(`/`);
+    setLoading(false);
+    router.push(`/calendar`);
   };
 
   const handleDelete = async () => {
+    setLoading(true);
     const { error } = await supabase
       .from("reminders")
       .delete()
@@ -103,8 +110,13 @@ export default function Page({}) {
     }
 
     toast.success("Reminder deleted successfully!");
-    router.push(`/`);
+    setLoading(false);
+    router.push(`/calendar`);
   };
+
+  if (loading) {
+    return <LoadingIcon />;
+  }
 
   return (
     <main className="max-w-3xl mx-auto px-3 min-h-[90vh] pt-21">
@@ -164,8 +176,8 @@ export default function Page({}) {
           </Select>
         </div>
         <div>
-          <Button onClick={() => handleSubmit()} className="mt-4">
-            Save Reminder
+          <Button onClick={() => handleSubmit()} className="mt-4" disabled={loading}>
+            {loading ? "Saving..." : "Save Reminder"}
           </Button>
         </div>
       </section>
@@ -176,8 +188,9 @@ export default function Page({}) {
         <Button
           className="bg-red-500 hover:bg-red-600"
           onClick={() => handleDelete()}
+          disabled={loading}
         >
-          Delete Reminder
+          {loading ? "Deleting..." : "Delete Reminder"}
         </Button>
       </section>
     </main>

@@ -1,4 +1,3 @@
-// app/manifest.js
 export default function manifest() {
   return {
     name: "Reliance Calendar",
@@ -14,7 +13,6 @@ export default function manifest() {
     lang: "en",
     dir: "ltr",
     categories: ["productivity", "utilities"],
-    
     icons: [
       { src: "/icons/icon-16.png", sizes: "16x16", type: "image/png" },
       { src: "/icons/icon-32.png", sizes: "32x32", type: "image/png" },

@@ -1,7 +1,6 @@
 "use client";
-
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const coverImages = [
   "/calendar-cover-1.jpeg",
@@ -14,18 +13,16 @@ const coverImages = [
 ];
 
 export default function CoverImage() {
-  // Must be deterministic between server render and client hydration.
-  // Start with a stable default, then randomize after mount.
-  const [selectedImage, setSelectedImage] = useState(coverImages[0]);
+  const selectImage = () => {
+    const next = Math.floor(Math.random() * coverImages.length);
+    return next;
+  };
 
-  useEffect(() => {
-    const next = coverImages[Math.floor(Math.random() * coverImages.length)];
-    setSelectedImage(next);
-  }, []);
+  const [selectedImage] = useState(() => selectImage());
 
   return (
     <Image
-      src={selectedImage}
+      src={coverImages[selectedImage]}
       alt="Calendar cover image"
       width={1365}
       height={768}

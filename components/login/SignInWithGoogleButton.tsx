@@ -1,6 +1,5 @@
 "use client";
 import { useCallback } from 'react'
-
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/utils/supabase/client'
 

@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingIcon from "@/components/loading-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,9 +21,9 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export default function Page({}) {
+  const [loading, setLoading] = useState(false);
   const supabase = createClient();
   const router = useRouter();
-
 
   const params = useParams<{ date: string }>();
   const parsedDate = useMemo(
@@ -41,6 +42,7 @@ export default function Page({}) {
 
   useEffect(() => {
     const fetchUser = async () => {
+      setLoading(true);
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -48,11 +50,13 @@ export default function Page({}) {
         setReminderData((prev) => ({ ...prev, email: user.email ?? "" }));
       }
       console.log(user);
+      setLoading(false);
     };
     fetchUser();
   }, [supabase]);
 
   const handleSubmit = async () => {
+    setLoading(true);
     if (!reminderData.title || reminderData.title.trim() === "") {
       console.log(reminderData);
       toast.error("Please enter a title for the reminder.");
@@ -68,8 +72,13 @@ export default function Page({}) {
 
     toast.success("Reminder saved successfully!");
     setReminderData((prev) => ({ ...prev, title: "", description: "" }));
-    router.push(`/`);
+    setLoading(false);
+    router.push(`/calendar`);
   };
+
+  if (loading) {
+    return <LoadingIcon />;
+  }
 
   return (
     <main className="max-w-3xl mx-auto px-3 min-h-[90vh] pt-21">
@@ -135,8 +144,8 @@ export default function Page({}) {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={() => handleSubmit()} className="mt-4">
-          Save Reminder
+        <Button onClick={() => handleSubmit()} className="mt-4" disabled={loading}>
+          {loading ? "Saving..." : "Save Reminder"}
         </Button>
       </section>
     </main>

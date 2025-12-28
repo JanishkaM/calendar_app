@@ -1,12 +1,12 @@
 "use client";
 
-import { usePWAStatus } from "@/utils/CheckPWA";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import LoadingIcon from "@/components/loading-icon";
-import { LoginForm } from "../components/login/LoginForm";
+import { LoginForm } from "@/components/login/LoginForm";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { usePWAStatus } from "@/utils/CheckPWA";
 
-export default function LoginPage() {
+export default function LoginRoute() {
   const router = useRouter();
   // const { isInstalled, isReady } = usePWAStatus({ redirectToInstall: false });
 

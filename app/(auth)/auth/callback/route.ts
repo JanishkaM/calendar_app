@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
   redirectUrl.search = ''
 
   const response = NextResponse.redirect(redirectUrl)
-  supabaseResponse.cookies.getAll().forEach(({ name, value, options }) =>
-    response.cookies.set(name, value, options)
+  supabaseResponse.cookies.getAll().forEach(({ name, value }) =>
+    response.cookies.set(name, value)
   )
   return response
 }

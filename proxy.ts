@@ -39,8 +39,8 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
     const redirectResponse = NextResponse.redirect(url)
-    supabaseResponse.cookies.getAll().forEach(({ name, value, options }) =>
-      redirectResponse.cookies.set(name, value, options)
+    supabaseResponse.cookies.getAll().forEach(({ name, value }) =>
+      redirectResponse.cookies.set(name, value)
     )
     return redirectResponse
   }

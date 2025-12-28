@@ -1,4 +1,5 @@
 'use client';
+import LoadingIcon from "@/components/loading-icon";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -7,7 +8,7 @@ const LogoutPage =  () => {
     useEffect(() => {
         setTimeout(()=> router.push("/"), 2000);
     }, []);
-  return <div>You have logged out... redirecting in a sec.</div>;
+  return <LoadingIcon />;
 };
 
 export default LogoutPage;

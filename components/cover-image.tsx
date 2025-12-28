@@ -26,7 +26,7 @@ export default function CoverImage() {
       alt="Calendar cover image"
       width={1365}
       height={768}
-      className="sticky top-[-18vh] md:top-[-30vh] left-0 z-50 mx-auto w-full max-h-[50vh] rounded-none object-cover object-bottom"
+      className="mx-auto w-full md:max-h-[25vh] rounded-none object-cover object-bottom"
     />
   );
 }

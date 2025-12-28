@@ -152,42 +152,48 @@ export default function Home() {
       <CoverImage />
       <main className="pt-5 md:pt-21 items-start w-full mx-auto max-w-3xl px-3">
         {loading && <LoadingIcon />}
-        <section className="w-full mb-21">
-          <Calendar
-            mode="single"
-            onNextClick={(e) => handleNavigation(e.getFullYear(), e.getMonth())}
-            onPrevClick={(e) => handleNavigation(e.getFullYear(), e.getMonth())}
-            className="rounded-lg w-full"
-            startMonth={new Date(2025, 11)}
-            endMonth={new Date(calendarYear, 11)}
-            onSelect={(date) => handleDateSelect(date)}
-            modifiers={{
-              publicHoliday: (date) =>
-                holidays.some(
-                  (holiday) =>
-                    holiday.publicHoliday &&
-                    holiday.date === date.getDate() &&
-                    holiday.month === date.getMonth() + 1
-                ),
-              bankHoliday: (date) =>
-                holidays.some(
-                  (holiday) =>
-                    holiday.bankHoliday &&
-                    holiday.date === date.getDate() &&
-                    holiday.month === date.getMonth() + 1
-                ),
-              mercantileHoliday: (date) =>
-                holidays.some(
-                  (holiday) =>
-                    holiday.mercantileHoliday &&
-                    holiday.date === date.getDate() &&
-                    holiday.month === date.getMonth() + 1
-                ),
-            }}
-            fixedWeeks={true}
-            numberOfMonths={1}
-          />
-          <ul className="mt-7">
+        <section className="flex flex-col mb-21 gap-7">
+          <div className="w-full h-full">
+            <Calendar
+              mode="single"
+              onNextClick={(e) =>
+                handleNavigation(e.getFullYear(), e.getMonth())
+              }
+              onPrevClick={(e) =>
+                handleNavigation(e.getFullYear(), e.getMonth())
+              }
+              className="rounded-lg w-full"
+              startMonth={new Date(2025, 11)}
+              endMonth={new Date(calendarYear, 11)}
+              onSelect={(date) => handleDateSelect(date)}
+              modifiers={{
+                publicHoliday: (date) =>
+                  holidays.some(
+                    (holiday) =>
+                      holiday.publicHoliday &&
+                      holiday.date === date.getDate() &&
+                      holiday.month === date.getMonth() + 1
+                  ),
+                bankHoliday: (date) =>
+                  holidays.some(
+                    (holiday) =>
+                      holiday.bankHoliday &&
+                      holiday.date === date.getDate() &&
+                      holiday.month === date.getMonth() + 1
+                  ),
+                mercantileHoliday: (date) =>
+                  holidays.some(
+                    (holiday) =>
+                      holiday.mercantileHoliday &&
+                      holiday.date === date.getDate() &&
+                      holiday.month === date.getMonth() + 1
+                  ),
+              }}
+              fixedWeeks={true}
+              numberOfMonths={1}
+            />
+          </div>
+          <ul>
             {currentHolidays.map((holiday, index) => (
               <li key={index} className="text-md mt-2 font-bold">
                 {holiday.date} - {holiday.name}

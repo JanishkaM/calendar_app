@@ -7,7 +7,7 @@ const SignInWithGoogleButton = () => {
   const supabase = createClient()
 
   const handleGoogleSignIn = useCallback(async () => {
-    const origin = typeof window !== 'undefined' ? window.location.origin : ''
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',

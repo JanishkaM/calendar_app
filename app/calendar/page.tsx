@@ -204,6 +204,8 @@ export default function Home() {
               numberOfMonths={1}
             />
           </div>
+        </section>
+        <section>
           <div className="w-full h-full">
             <ul>
               {currentHolidays.map((holiday, index) => (

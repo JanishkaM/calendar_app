@@ -1,12 +1,3 @@
-/*
- * OneAttend PWA Service Worker
- * Strategies:
- *  - Navigations: network-first (cache & offline fallback)
- *  - /_next/static/ & build assets: cache-first
- *  - Images: stale-while-revalidate
- *  - API GET: network-first with cached fallback
- */
-
 const SW_VERSION = 'v4';
 const PRECACHE = `precache-${SW_VERSION}`;
 const RUNTIME = `runtime-${SW_VERSION}`;

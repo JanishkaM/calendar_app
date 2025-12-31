@@ -29,7 +29,10 @@ export default function Page({}) {
   const [reminderData, setReminderData] = useState({
     title: "",
     description: "",
-    priority: "low",
+    startTime: "",
+    priority: "",
+    activity: "",
+    status: "",
   });
 
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function Page({}) {
     const fetchReminder = async () => {
       setLoading(true);
       const { data, error } = await supabase
-        .from("reminders")
+        .from("dayPlans")
         .select("*")
         .eq("id", params.id)
         .single();
@@ -64,7 +67,11 @@ export default function Page({}) {
           title: data.title,
           description: data.description,
           priority: data.priority,
+          startTime: data.startTime,
+          activity: data.activity,
+          status: data.status,
         });
+        setLoading(false);
         console.log("Fetched reminder data:", data);
         return;
       }
@@ -83,12 +90,13 @@ export default function Page({}) {
     }
 
     const { error } = await supabase
-      .from("reminders")
+      .from("dayPlans")
       .update([reminderData])
       .eq("id", params.id);
 
     if (error) {
       toast.error("Failed to save reminder. Please try again.");
+      setLoading(false);
       return;
     }
 
@@ -100,12 +108,13 @@ export default function Page({}) {
   const handleDelete = async () => {
     setLoading(true);
     const { error } = await supabase
-      .from("reminders")
+      .from("dayPlans")
       .delete()
       .eq("id", params.id);
 
     if (error) {
       toast.error("Failed to delete reminder. Please try again.");
+      setLoading(false);
       return;
     }
 
@@ -138,6 +147,18 @@ export default function Page({}) {
             value={reminderData.title}
             onChange={(e) =>
               setReminderData({ ...reminderData, title: e.target.value })
+            }
+          />
+        </div>
+        <div className="mb-5">
+          <Label htmlFor="reminder_time">Reminder Time*</Label>
+          <Input
+            type="time"
+            id="reminder_time"
+            className="mt-2"
+            value={reminderData.startTime}
+            onChange={(e) =>
+              setReminderData({ ...reminderData, startTime: e.target.value })
             }
           />
         </div>
@@ -175,8 +196,68 @@ export default function Page({}) {
             </SelectContent>
           </Select>
         </div>
+        <div className="mb-5">
+          <Label htmlFor="reminder_activity" className="mb-2">
+            Reminder Activity*
+          </Label>
+          <Select
+            value={reminderData.activity}
+            onValueChange={(value) =>
+              setReminderData({ ...reminderData, activity: value })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a status" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectGroup>
+                <SelectLabel>Activity</SelectLabel>
+                <SelectItem value="wakeup">Wakeup</SelectItem>
+                <SelectItem value="meal">Meal</SelectItem>
+                <SelectItem value="meeting">Meeting</SelectItem>
+                <SelectItem value="appointment">Appointment</SelectItem>
+                <SelectItem value="call">Call</SelectItem>
+                <SelectItem value="email">Email</SelectItem>
+                <SelectItem value="learning">Learning</SelectItem>
+                <SelectItem value="exercises">Exercises</SelectItem>
+                <SelectItem value="sleeping">Sleeping</SelectItem>
+                <SelectItem value="maintenance">Maintenance</SelectItem>
+                <SelectItem value="relaxing">Relaxing</SelectItem>
+                <SelectItem value="medicine">Medicine</SelectItem>
+                <SelectItem value="others">Others</SelectItem>
+                </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="mb-5">
+          <Label htmlFor="reminder_status" className="mb-2">
+            Reminder Status*
+          </Label>
+          <Select
+            value={reminderData.status}
+            onValueChange={(value) =>
+              setReminderData({ ...reminderData, status: value })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Status</SelectLabel>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="shift">Shift</SelectItem>
+                <SelectItem value="done">Done</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         <div>
-          <Button onClick={() => handleSubmit()} className="mt-4" disabled={loading}>
+          <Button
+            onClick={() => handleSubmit()}
+            className="mt-4"
+            disabled={loading}
+          >
             {loading ? "Saving..." : "Save Reminder"}
           </Button>
         </div>

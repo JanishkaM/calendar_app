@@ -1,32 +1,43 @@
 "use client";
-import Image from "next/image";
-import { useState } from "react";
 
-const coverImages = [
-  "/calendar-cover-1.jpeg",
-  "/calendar-cover-2.jpeg",
-  "/calendar-cover-3.jpeg",
-  "/calendar-cover-4.jpeg",
-  "/calendar-cover-5.jpeg",
-  "/calendar-cover-6.jpeg",
-  "/calendar-cover-7.jpeg",
+import Image from "next/image";
+import { useEffect, useState } from "react";
+
+const images = [
+  "/backgrounds/calendar-cover-1.jpeg",
+  "/backgrounds/calendar-cover-2.jpeg",
+  "/backgrounds/calendar-cover-3.jpeg",
+  "/backgrounds/calendar-cover-4.jpeg",
+  "/backgrounds/calendar-cover-5.jpeg",
+  "/backgrounds/calendar-cover-6.jpeg",
+  "/backgrounds/calendar-cover-7.jpeg",
 ];
 
+const getRandomImage = (imageArray: string[]) => {
+  const randomIndex = Math.floor(Math.random() * imageArray.length);
+  return imageArray[randomIndex];
+};
+
 export default function CoverImage() {
-  const selectImage = () => {
-    const next = Math.floor(Math.random() * coverImages.length);
-    return next;
-  };
+  const [currentImageSrc, setCurrentImageSrc] = useState<string | null>(null);
 
-  const [selectedImage] = useState(() => selectImage());
+  useEffect(() => {
+    setCurrentImageSrc(getRandomImage(images));
+  }, []);
 
+  if (!currentImageSrc) {
+    return (
+      <div className="mx-auto w-full md:max-h-[25vh] rounded-none bg-muted" aria-hidden />
+    );
+  }
   return (
     <Image
-      src={coverImages[selectedImage]}
+      src={currentImageSrc}
       alt="Calendar cover image"
       width={1365}
       height={768}
       className="mx-auto w-full md:max-h-[25vh] rounded-none object-cover object-bottom"
+      priority={true}
     />
   );
 }

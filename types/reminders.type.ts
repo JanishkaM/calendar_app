@@ -8,4 +8,7 @@ export interface Reminder {
   year: number;
   email: string;
   created_at: string;
+  activity: string;
+  startTime: string;
+  status: "pending" | "shift" | "done";
 }

@@ -34,6 +34,9 @@ export default function Page({}) {
     title: "",
     description: "",
     priority: "low",
+    startTime: "",
+    activity: "",
+    status: "pending",
     month: parsedDate.getMonth() + 1,
     day: parsedDate.getDate(),
     year: parsedDate.getFullYear(),
@@ -60,18 +63,40 @@ export default function Page({}) {
     if (!reminderData.title || reminderData.title.trim() === "") {
       console.log(reminderData);
       toast.error("Please enter a title for the reminder.");
+      setLoading(false);
       return;
     }
 
-    const { error } = await supabase.from("reminders").insert([reminderData]);
+    if (!reminderData.startTime) {
+      toast.error("Please select a time for the reminder.");
+      setLoading(false);
+      return;
+    }
+
+    if (!reminderData.activity) {
+      toast.error("Please select an activity.");
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await supabase.from("dayPlans").insert([reminderData]);
 
     if (error) {
       toast.error("Failed to save reminder. Please try again.");
+      setLoading(false);
       return;
     }
 
     toast.success("Reminder saved successfully!");
-    setReminderData((prev) => ({ ...prev, title: "", description: "" }));
+    setReminderData((prev) => ({
+      ...prev,
+      title: "",
+      description: "",
+      startTime: "",
+      activity: "",
+      status: "pending",
+      priority: "low",
+    }));
     setLoading(false);
     router.push(`/calendar`);
   };
@@ -111,6 +136,18 @@ export default function Page({}) {
           />
         </div>
         <div className="mb-5">
+          <Label htmlFor="reminder_time">Reminder Time*</Label>
+          <Input
+            type="time"
+            id="reminder_time"
+            className="mt-2"
+            value={reminderData.startTime}
+            onChange={(e) =>
+              setReminderData({ ...reminderData, startTime: e.target.value })
+            }
+          />
+        </div>
+        <div className="mb-5">
           <Label htmlFor="reminder_description">Reminder Description</Label>
           <Textarea
             id="reminder_description"
@@ -140,6 +177,62 @@ export default function Page({}) {
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="mb-5">
+          <Label htmlFor="reminder_activity" className="mb-2">
+            Reminder Activity*
+          </Label>
+          <Select
+            value={reminderData.activity}
+            onValueChange={(value) =>
+              setReminderData({ ...reminderData, activity: value })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select an activity" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Activity</SelectLabel>
+                <SelectItem value="wakeup">Wakeup</SelectItem>
+                <SelectItem value="meal">Meal</SelectItem>
+                <SelectItem value="meeting">Meeting</SelectItem>
+                <SelectItem value="appointment">Appointment</SelectItem>
+                <SelectItem value="call">Call</SelectItem>
+                <SelectItem value="email">Email</SelectItem>
+                <SelectItem value="learning">Learning</SelectItem>
+                <SelectItem value="exercises">Exercises</SelectItem>
+                <SelectItem value="sleeping">Sleeping</SelectItem>
+                <SelectItem value="maintenance">Maintenance</SelectItem>
+                <SelectItem value="relaxing">Relaxing</SelectItem>
+                <SelectItem value="medicine">Medicine</SelectItem>
+                <SelectItem value="others">Others</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="mb-5">
+          <Label htmlFor="reminder_status" className="mb-2">
+            Reminder Status*
+          </Label>
+          <Select
+            value={reminderData.status}
+            onValueChange={(value) =>
+              setReminderData({ ...reminderData, status: value })
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Status</SelectLabel>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="shift">Shift</SelectItem>
+                <SelectItem value="done">Done</SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

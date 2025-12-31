@@ -25,7 +25,7 @@ self.addEventListener('activate', (event) => {
         if (self.registration.navigationPreload) {
           await self.registration.navigationPreload.enable();
         }
-      } catch {}
+      } catch { }
       const keys = await caches.keys();
       await Promise.all(
         keys
@@ -111,9 +111,13 @@ async function networkFirstApi(request) {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  if (request.method !== 'GET') return;
-
   const url = new URL(request.url);
+
+  if (url.pathname.startsWith('/auth/callback') || url.search.includes('code=')) {
+    return; // Let the browser handle this naturally via the network
+  }
+
+  if (request.method !== 'GET') return;
 
   // Skip cross-origin except maybe images/fonts/CDNs you want; keep default pass-through
   if (url.origin !== self.location.origin) return;

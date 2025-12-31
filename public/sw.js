@@ -1,4 +1,4 @@
-const SW_VERSION = 'v4';
+const SW_VERSION = 'v5';
 const PRECACHE = `precache-${SW_VERSION}`;
 const RUNTIME = `runtime-${SW_VERSION}`;
 
@@ -25,7 +25,7 @@ self.addEventListener('activate', (event) => {
         if (self.registration.navigationPreload) {
           await self.registration.navigationPreload.enable();
         }
-      } catch { }
+      } catch {}
       const keys = await caches.keys();
       await Promise.all(
         keys
@@ -33,13 +33,11 @@ self.addEventListener('activate', (event) => {
           .map(k => caches.delete(k))
       );
       await self.clients.claim();
-      const clientsList = await self.clients.matchAll({ includeUncontrolled: true });
-      clientsList.forEach(c =>
-        c.postMessage({ type: 'SW_READY', version: SW_VERSION })
-      );
     })()
   );
 });
+
+// --- HELPER FUNCTIONS ---
 
 function isImageRequest(url) {
   return /\.(png|jpg|jpeg|gif|webp|svg|ico|avif)$/.test(url.pathname);
@@ -47,6 +45,16 @@ function isImageRequest(url) {
 
 function isApiGet(request, url) {
   return request.method === 'GET' && url.pathname.startsWith('/api/');
+}
+
+// Check if the request is for Supabase Auth
+function isAuthRequest(url) {
+  return (
+    url.pathname.startsWith('/auth/') || 
+    url.search.includes('code=') || 
+    url.search.includes('access_token=') ||
+    url.hash.includes('access_token=')
+  );
 }
 
 async function handleNavigation(event, request) {
@@ -67,13 +75,15 @@ async function handleNavigation(event, request) {
   }
 }
 
+// --- FETCH STRATEGIES ---
+
 async function cacheFirst(request) {
   const cache = await caches.open(RUNTIME);
   const cached = await cache.match(request);
   if (cached) return cached;
   try {
     const resp = await fetch(request);
-    if (resp.ok) cache.put(request, resp.clone());
+    if (resp && resp.ok) cache.put(request, resp.clone());
     return resp;
   } catch {
     return cached || new Response('', { status: 504 });
@@ -92,81 +102,56 @@ async function staleWhileRevalidate(request) {
   return cached || fetchPromise;
 }
 
-async function networkFirstApi(request) {
-  const cache = await caches.open(RUNTIME);
-  try {
-    const resp = await fetch(request);
-    // optionally only cache 200 responses
-    if (resp && resp.ok) cache.put(request, resp.clone());
-    return resp;
-  } catch {
-    const cached = await cache.match(request);
-    if (cached) return cached;
-    return new Response(JSON.stringify({ offline: true }), {
-      status: 503,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-}
+// --- MAIN FETCH LISTENER ---
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  if (url.pathname.startsWith('/auth/callback') || url.search.includes('code=')) {
-    return; // Let the browser handle this naturally via the network
+  // 1. CRITICAL BYPASS: Do not handle Auth or Cross-Origin requests
+  if (isAuthRequest(url) || url.origin !== self.location.origin) {
+    return; // Let the browser handle these normally
   }
 
   if (request.method !== 'GET') return;
 
-  // Skip cross-origin except maybe images/fonts/CDNs you want; keep default pass-through
-  if (url.origin !== self.location.origin) return;
-
-  // NAVIGATION requests
+  // 2. NAVIGATION requests (HTML pages)
   if (request.mode === 'navigate') {
     event.respondWith(handleNavigation(event, request));
     return;
   }
 
-  // NEXT build/static assets
-  if (url.pathname.startsWith('/_next/static/')) {
+  // 3. STATIC ASSETS (Framework specific)
+  if (url.pathname.startsWith('/_next/static/') || url.pathname.startsWith('/static/')) {
     event.respondWith(cacheFirst(request));
     return;
   }
 
-  // Optimized images endpoint (_next/image) - network first with fallback
-  if (url.pathname.startsWith('/_next/image')) {
+  // 4. IMAGES
+  if (isImageRequest(url) || url.pathname.startsWith('/_next/image')) {
     event.respondWith(staleWhileRevalidate(request));
     return;
   }
 
-  // Regular images
-  if (isImageRequest(url)) {
-    event.respondWith(staleWhileRevalidate(request));
-    return;
-  }
-
-  // API GET
+  // 5. API GET
   if (isApiGet(request, url)) {
-    event.respondWith(networkFirstApi(request));
+    event.respondWith(fetch(request)); // Better to not cache API auth calls
     return;
   }
 
-  // Default: just try network, fallback to cache if exists
+  // 6. DEFAULT: Network first, fallback to cache
   event.respondWith(
     (async () => {
       try {
         return await fetch(request);
       } catch {
         const cache = await caches.open(RUNTIME);
-        const cached = await cache.match(request);
-        return cached || new Response('Offline', { status: 503 });
+        return await cache.match(request) || new Response('Offline', { status: 503 });
       }
     })()
   );
 });
 
-// MESSAGE: allow skipWaiting trigger
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();

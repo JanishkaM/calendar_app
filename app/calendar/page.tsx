@@ -174,7 +174,7 @@ export default function Home() {
                 handleNavigation(e.getFullYear(), e.getMonth())
               }
               className="rounded-lg w-full"
-              startMonth={new Date(2025, 11)}
+              startMonth={new Date(calendarYear, 0)}
               endMonth={new Date(calendarYear, 11)}
               onSelect={(date) => handleDateSelect(date)}
               modifiers={{

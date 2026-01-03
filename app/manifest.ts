@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Calendar",
     description:
       "Calendar with reminders, holidays, and PWA home-screen access.",
-    start_url: "/?source=pwa",
+    start_url: "/calendar",
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#8e51ff",

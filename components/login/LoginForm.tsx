@@ -10,7 +10,7 @@ import SignInWithGoogleButton from "./SignInWithGoogleButton"
 export function LoginForm() {
   return (
     <Card className="mx-auto max-w-md w-full">
-      <CardHeader>
+      <CardHeader className="text-center">
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>
           Sign in with your Google account to access the calendar

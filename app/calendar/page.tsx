@@ -1,6 +1,6 @@
 "use client";
 import { Calendar } from "@/components/ui/calendar";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { holidays, Holiday } from "@/data/holidays";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/utils/supabase/client";
@@ -8,10 +8,19 @@ import type { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Reminder } from "@/types/reminders.type";
-import { Edit } from "lucide-react";
+import { Task } from "@/types/task.type";
+import { Edit, ListTodo, Plus, X } from "lucide-react";
 import LoadingIcon from "@/components/loading-icon";
 import CoverImage from "@/components/cover-image";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 const months = [
   "January",
@@ -28,83 +37,73 @@ const months = [
   "December",
 ];
 
+const wait = () => new Promise((resolve) => setTimeout(resolve, 200));
+
 export default function Home() {
-  const router = useRouter();
-
-  const calendarYear = Number(process.env.NEXT_PUBLIC_CALENDAR_YEAR);
-  const supabase = useMemo(() => createClient(), []);
   const [loading, setLoading] = useState<boolean>(true);
-
-  const [user, setUser] = useState<User | null>(null);
-  const [currentMonth, setCurrentMonth] = useState<number>(() =>
-    new Date().getMonth()
-  );
-  const [currentYear, setCurrentYear] = useState<number>(() =>
-    new Date().getFullYear()
-  );
-  //console.log("Current Month:", currentMonth);
+  const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
+  const [open, setOpen] = useState(false);
 
   const today = [
     new Date().getDate(),
     new Date().getMonth() + 1,
     new Date().getFullYear(),
   ];
+  const [user, setUser] = useState<User | null>(null);
+  const currentYear = Number(process.env.NEXT_PUBLIC_CALENDAR_YEAR);
 
-  //console.log("Today is:", today);
+  const [selectedMonth, setSelectedMonth] = useState<number>(today[1] - 1);
+  const [selectedDay, setSelectedDay] = useState<number>(today[0]);
 
   const [currentHolidays, setCurrentHolidays] = useState<Holiday[]>(() => {
     const now = new Date();
     return holidays.filter((holiday) => holiday.month === now.getMonth() + 1);
   });
 
-  const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [reminders, setReminders] = useState<Task[]>([]);
 
-  useEffect(() => {
-    let cancelled = false;
+  const fetchReminders = useCallback(
+    async (
+      day: number,
+      month: number,
+      userEmail: string = user?.email || ""
+    ) => {
+      setLoading(true);
 
-    const fetchReminders = async () => {
-      // Avoid querying with an undefined email (can lead to intermittent empty results).
-      if (!user?.email) {
+      if (!userEmail) {
         setReminders([]);
         setLoading(false);
         return;
       }
-
-      setLoading(true);
       try {
         const { data, error } = await supabase
           .from("dayPlans")
           .select("*")
-          .eq("email", user.email)
-          .eq("month", currentMonth + 1)
+          .eq("email", userEmail)
+          .eq("month", month)
           .eq("year", currentYear)
-          .order("day", { ascending: true });
+          .eq("day", day);
 
         if (error) {
           console.error("Error fetching day plans:", error);
           return;
         }
-
-        if (!cancelled) {
-          setReminders(data || []);
-        }
+        setReminders(data || []);
+      } catch (error) {
+        console.error("Error fetching day plans:", error);
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
-    };
-
-    fetchReminders();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [currentMonth, currentYear, supabase, user]);
+    },
+    [currentYear, supabase, user?.email]
+  );
 
   useEffect(() => {
-    let cancelled = false;
+    fetchReminders(selectedDay, selectedMonth + 1, user?.email);
+  }, [fetchReminders, selectedDay, selectedMonth, user?.email]);
 
+  useEffect(() => {
     const loadUser = async () => {
       setLoading(true);
       try {
@@ -112,13 +111,9 @@ export default function Home() {
           data: { user },
         } = await supabase.auth.getUser();
 
-        if (!cancelled) {
-          setUser(user);
-        }
+        setUser(user);
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
@@ -131,20 +126,18 @@ export default function Home() {
     loadUser();
 
     return () => {
-      cancelled = true;
       subscription.subscription.unsubscribe();
     };
   }, [supabase]);
 
   const handleLogout = async () => {
+    setLoading(true);
     await supabase.auth.signOut();
     router.push("/");
-    router.refresh();
   };
 
-  const handleNavigation = (year: number, month: number) => {
-    setCurrentYear(year);
-    setCurrentMonth(month);
+  const handleNavigation = (month: number) => {
+    setSelectedMonth(month);
 
     const filteredHolidays = holidays.filter((holiday) => {
       return holiday.month === month + 1;
@@ -152,10 +145,16 @@ export default function Home() {
     setCurrentHolidays(filteredHolidays);
   };
 
-  const handleDateSelect = (date?: Date | Date[]) => {
+  const handleDateSelect = async (date?: Date | Date[]) => {
     if (!date) return;
     const selectedDate = Array.isArray(date) ? date[0] : date;
-    router.push(`/reminders/${selectedDate.toISOString()}`);
+    const day = selectedDate.getDate();
+    const month = selectedDate.getMonth() + 1;
+
+    setSelectedDay(day);
+    setSelectedMonth(selectedDate.getMonth());
+    await fetchReminders(day, month, user?.email);
+    wait().then(() => setOpen((prev) => !prev));
   };
 
   return (
@@ -167,15 +166,12 @@ export default function Home() {
           <div className="w-full h-full">
             <Calendar
               mode="single"
-              onNextClick={(e) =>
-                handleNavigation(e.getFullYear(), e.getMonth())
-              }
-              onPrevClick={(e) =>
-                handleNavigation(e.getFullYear(), e.getMonth())
-              }
-              className="rounded-lg w-full"
-              startMonth={new Date(calendarYear, 0)}
-              endMonth={new Date(calendarYear, 11)}
+              showWeekNumber={true}
+              onNextClick={(e) => handleNavigation(e.getMonth())}
+              onPrevClick={(e) => handleNavigation(e.getMonth())}
+              className="w-full"
+              startMonth={new Date(currentYear, 0)}
+              endMonth={new Date(currentYear, 11)}
               onSelect={(date) => handleDateSelect(date)}
               modifiers={{
                 publicHoliday: (date) =>
@@ -206,40 +202,33 @@ export default function Home() {
           </div>
         </section>
         <section>
-          <div className="w-full h-full">
-            <ul>
-              {currentHolidays.map((holiday, index) => (
-                <li key={index} className="text-md mt-2 font-bold">
-                  {holiday.date} - {holiday.name}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
-        <section>
-          <section className="w-full mb-16">
-            <div className="text-center mb-8">
-              <h2 className="text-[34px] font-black">Day Planer</h2>
-              <p className="text-[12px]">
-                Showing Day Planer for the{" "}
-                <span className="font-bold">
-                  {months[currentMonth]} {currentYear}
-                </span>
-              </p>
+          <div>
+            <div className="fixed bottom-4 left-4">
+              <Button size="icon" onClick={() => router.push("/task/new")}>
+                <Plus className="size-7" />
+              </Button>
             </div>
-            <div>
-              <ul className="grid grid-cols-1 lg:grid-cols-2 gap-3 w-full">
+          </div>
+          <Drawer autoFocus open={open} onOpenChange={setOpen}>
+              <DrawerTrigger className="bg-primary fixed bottom-4 right-4 size-9 rounded-md flex items-center justify-center shadow-lg hover:shadow-xl">
+                <ListTodo className="size-7" />
+              </DrawerTrigger>
+            <DrawerContent className="max-w-4xl mx-auto">
+              <DrawerHeader className="text-start">
+                <DrawerTitle>Day Plans</DrawerTitle>
+                <DrawerDescription>
+                  Showing Day Planer for the{" "}
+                  <span className="font-bold">
+                    {selectedDay} {months[selectedMonth]}
+                  </span>
+                </DrawerDescription>
+              </DrawerHeader>
+              <div className="px-1 grid grid-cols-1 md:grid-cols-2 gap-2 mb-5 scroll-auto overflow-y-scroll">
                 {reminders.length > 0 ? (
                   reminders.map((reminder, index) => (
-                    <li
+                    <div
                       key={index}
-                      className={`bg-accent ${
-                        reminder.day < today[0] &&
-                        reminder.month == today[1] &&
-                        reminder.year == today[2]
-                          ? "opacity-60"
-                          : ""
-                      } border-l-8 ${
+                      className={`bg-accent border-l-8 ${
                         reminder.priority === "low"
                           ? "border-green-500"
                           : reminder.priority === "medium"
@@ -262,7 +251,7 @@ export default function Home() {
                             size="icon"
                             className="p-2 bg-background/50 hover:bg-background/20"
                             onClick={() =>
-                              router.push(`/reminders/edit/${reminder.id}`)
+                              router.push(`/task/edit/${reminder.id}`)
                             }
                           >
                             <Edit />
@@ -289,23 +278,26 @@ export default function Home() {
                           {reminder.status}
                         </Badge>
                       </p>
-                    </li>
+                    </div>
                   ))
                 ) : (
                   <p className="text-center w-full col-span-2">
-                    No Reminders available for this month.
+                    No Reminders available for this day.
                   </p>
                 )}
-              </ul>
-            </div>
-          </section>
+              </div>
+              <DrawerClose className="fixed right-3 bottom-3 bg-primary/60 max-w-30 rounded-md px-2 py-2">
+                <X />
+              </DrawerClose>
+            </DrawerContent>
+          </Drawer>
           <section className="w-full max-w-3xl mb-16">
-            <div className="text-center mb-8">
+            <div className="mb-4 text-center">
               <h2 className="text-[34px] font-black">Holidays</h2>
               <p className="text-[12px]">
                 Showing holidays for the{" "}
                 <span className="font-bold">
-                  {months[currentMonth]} {currentYear}
+                  {months[selectedMonth]} {currentYear}
                 </span>
               </p>
             </div>
@@ -367,7 +359,7 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
               </div>
-              <Button variant="outline" onClick={handleLogout}>
+              <Button className="bg-red-500 hover:bg-red-700" onClick={() => handleLogout()}>
                 Sign Out
               </Button>
             </div>

@@ -25,7 +25,7 @@ export default function ThemeTrigger() {
         )
       }
       size="icon"
-      className="fixed z-50 bottom-2 right-2"
+      className="fixed z-50 top-18 right-2"
     >
       <Sun
         style={theme === "light" ? {opacity: "1"} : { opacity: "0" }}

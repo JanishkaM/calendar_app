@@ -1,5 +1,5 @@
-export interface Reminder {
-  id: number;
+export interface Task {
+  id?: number;
   title: string;
   description: string;
   priority: "low" | "medium" | "high";
@@ -7,7 +7,7 @@ export interface Reminder {
   day: number;
   year: number;
   email: string;
-  created_at: string;
+  created_at?: string;
   activity: string;
   startTime: string;
   status: "pending" | "shift" | "done";

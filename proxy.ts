@@ -1,55 +1,42 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from "next/server";
+import { updateSession } from "./utils/supabase/proxy";
+import { isUserAuthenticated, User } from "./utils/checkAuth";
+
 
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
+  const url = request.nextUrl.clone();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
-  )
+  const publicPaths = ["/", "/auth/callback"];
+  const isPublic = publicPaths.some(
+    (path) => url.pathname === path || url.pathname.startsWith(`${path}/`)
+  );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data } = await updateSession(request);
+  const user = data?.user;
+  const isAuthenticated = isUserAuthenticated(user as User);
 
-  const isProtectedRoute =
-    request.nextUrl.pathname.startsWith('/calendar') ||
-    request.nextUrl.pathname.startsWith('/reminders')
-
-  if (!user && isProtectedRoute) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/'
-    const redirectResponse = NextResponse.redirect(url)
-    supabaseResponse.cookies.getAll().forEach(({ name, value }) =>
-      redirectResponse.cookies.set(name, value)
-    )
-    return redirectResponse
+  if (!isPublic && !isAuthenticated) {
+    url.pathname = "/";
+    return NextResponse.redirect(url);
   }
 
-  return supabaseResponse
-}
+  if (isPublic && isAuthenticated) {
+    url.pathname = "/calendar";
+    console.log("Authenticated user accessing public route, redirecting to /calendar");
+    return NextResponse.redirect(url);
+  }
 
-export { proxy as middleware }
+  if (isPublic){
+    return NextResponse.next();
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ['/calendar/:path*', '/reminders/:path*'],
-}
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/calendar/:path*",
+    "/task/:path*",
+  ],
+};

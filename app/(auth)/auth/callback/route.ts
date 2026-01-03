@@ -1,50 +1,37 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+// The client you created from the Server-Side Auth instructions
+import { createClient } from '@/utils/supabase/server'
 
-export async function GET(request: NextRequest) {
-  const code = request.nextUrl.searchParams.get('code')
-
-  if (!code) {
-    const redirectUrl = request.nextUrl.clone()
-    redirectUrl.pathname = '/'
-    redirectUrl.search = ''
-    return NextResponse.redirect(redirectUrl)
+export async function GET(request: Request) {
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+  // if "next" is in param, use it as the redirect URL
+  let next = searchParams.get('next') ?? '/calendar'
+  if (!next.startsWith('/')) {
+    // if "next" is not a relative URL, use the default
+    next = '/calendar'
   }
 
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
+  if (code) {
+    console.log('Auth code received:', code)
+    const supabase = await createClient()
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error) {
+      const forwardedHost = request.headers.get('x-forwarded-host')
+      console.log('Original origin before load balancer:', forwardedHost)
+      const isLocalEnv = process.env.NODE_ENV === 'development'
+      if (isLocalEnv) {
+        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
+        return NextResponse.redirect(`${origin}${next}`)
+      } else if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+      } else {
+        return NextResponse.redirect(`${origin}${next}`)
+      }
     }
-  )
+  }
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code)
-
-  const redirectUrl = request.nextUrl.clone()
-  redirectUrl.pathname = error ? '/' : '/calendar'
-  redirectUrl.search = ''
-
-  const response = NextResponse.redirect(redirectUrl)
-  supabaseResponse.cookies.getAll().forEach(({ name, value }) =>
-    response.cookies.set(name, value)
-  )
-  return response
+  console.error('Auth code exchange failed')
+  // return the user to an error page with instructions
+  return NextResponse.redirect(`${origin}/auth/auth-code-error`)
 }

@@ -92,7 +92,7 @@ export default function Page({}) {
         .single();
 
       if (error) {
-        toast.error("Failed to fetch reminder data.");
+        toast.error("Failed to get task data.");
         return;
       }
 
@@ -101,11 +101,11 @@ export default function Page({}) {
           ...data,
         }));
         setLoading(false);
-        console.log("Fetched reminder data:", data);
+        console.log("Fetched task data:", data);
         return;
       }
       setLoading(false);
-      toast.error("Reminder not found.");
+      toast.error("Task not found.");
     };
     fetchReminder();
   }, [params.id, supabase]);
@@ -126,14 +126,14 @@ export default function Page({}) {
           .eq("id", params.id);
 
         if (error) {
-          toast.error("Failed to save reminder. Please try again.");
+          toast.error("Failed to save task. Please try again.");
           setLoading(false);
           return;
         }
 
         if (taskData.status === "shift") {
           if (!date) {
-            toast.error("Please select a date to shift the reminder.");
+            toast.error("Please select a date to shift the task.");
             setLoading(false);
             return;
           }
@@ -155,17 +155,17 @@ export default function Page({}) {
           ]);
 
           if (error) {
-            toast.error("Failed to shift the reminder date. Please try again.");
+            toast.error("Failed to shift the task date. Please try again.");
             setLoading(false);
             return;
           }
         }
-        toast.success("Reminder saved successfully!");
+        toast.success("Task saved successfully!");
         router.push(`/calendar`);
       }
     } catch (error) {
       toast.error("An unexpected error occurred. Please try again.");
-      console.error("Error updating reminder:", error);
+      console.error("Error updating task:", error);
     } finally {
       setLoading(false);
     }
@@ -179,12 +179,12 @@ export default function Page({}) {
       .eq("id", params.id);
 
     if (error) {
-      toast.error("Failed to delete reminder. Please try again.");
+      toast.error("Failed to delete task. Please try again.");
       setLoading(false);
       return;
     }
 
-    toast.success("Reminder deleted successfully!");
+    toast.success("Task deleted successfully!");
     setLoading(false);
     router.push(`/calendar`);
   };

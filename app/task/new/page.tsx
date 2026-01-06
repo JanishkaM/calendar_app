@@ -97,6 +97,15 @@ export default function Page({}) {
     status: "pending",
   });
 
+  const setTaskDate = (date: Date) => {
+    setReminderData((prev) => ({
+      ...prev,
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+      year: date.getFullYear(),
+    }));
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
@@ -125,11 +134,11 @@ export default function Page({}) {
       } else {
         const { error } = await supabase.from("dayPlans").insert([result.data]);
         if (error) {
-          toast.error("Failed to save reminder. Please try again.");
+          toast.error("Failed to save task. Please try again.");
           setLoading(false);
           return;
         }
-        toast.success("Reminder saved successfully!");
+        toast.success("Task saved successfully!");
         setReminderData((prev) => ({
           ...prev,
           title: "",
@@ -201,6 +210,7 @@ export default function Page({}) {
                   endMonth={new Date(currentYear, 11)}
                   onSelect={(date) => {
                     setDate(date);
+                    setTaskDate(date!);
                     setOpen(false);
                   }}
                 />

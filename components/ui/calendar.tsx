@@ -1,19 +1,20 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 import {
+  BellDot,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-} from "lucide-react"
+} from "lucide-react";
 import {
   DayPicker,
   getDefaultClassNames,
   type DayButton,
-} from "react-day-picker"
+} from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
 
 function Calendar({
   className,
@@ -25,9 +26,9 @@ function Calendar({
   components,
   ...props
 }: React.ComponentProps<typeof DayPicker> & {
-  buttonVariant?: React.ComponentProps<typeof Button>["variant"]
+  buttonVariant?: React.ComponentProps<typeof Button>["variant"];
 }) {
-  const defaultClassNames = getDefaultClassNames()
+  const defaultClassNames = getDefaultClassNames();
 
   return (
     <DayPicker
@@ -117,7 +118,7 @@ function Calendar({
         range_middle: cn("rounded-none", defaultClassNames.range_middle),
         range_end: cn("rounded-r-md bg-accent", defaultClassNames.range_end),
         today: cn(
-          "bg-amber-500 text-accent-foreground rounded-md data-[selected=true]:rounded-md",
+          "bg-amber-400 text-accent-foreground rounded-md data-[selected=true]:rounded-md",
           defaultClassNames.today
         ),
         outside: cn(
@@ -140,13 +141,16 @@ function Calendar({
               className={cn(className)}
               {...props}
             />
-          )
+          );
         },
         Chevron: ({ className, orientation, ...props }) => {
           if (orientation === "left") {
             return (
-              <ChevronLeftIcon className={cn("size-8 bg-accent rounded-md", className)} {...props} />
-            )
+              <ChevronLeftIcon
+                className={cn("size-8 bg-accent rounded-md", className)}
+                {...props}
+              />
+            );
           }
 
           if (orientation === "right") {
@@ -155,12 +159,12 @@ function Calendar({
                 className={cn("size-8 bg-accent rounded-md", className)}
                 {...props}
               />
-            )
+            );
           }
 
           return (
             <ChevronDownIcon className={cn("size-8", className)} {...props} />
-          )
+          );
         },
         DayButton: CalendarDayButton,
         WeekNumber: ({ children, ...props }) => {
@@ -170,13 +174,13 @@ function Calendar({
                 {children}
               </div>
             </td>
-          )
+          );
         },
         ...components,
       }}
       {...props}
     />
-  )
+  );
 }
 
 function CalendarDayButton({
@@ -185,17 +189,18 @@ function CalendarDayButton({
   modifiers,
   ...props
 }: React.ComponentProps<typeof DayButton>) {
-  const defaultClassNames = getDefaultClassNames()
+  const defaultClassNames = getDefaultClassNames();
 
-  const ref = React.useRef<HTMLButtonElement>(null)
+  const ref = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
-    if (modifiers.focused) ref.current?.focus()
-  }, [modifiers.focused])
+    if (modifiers.focused) ref.current?.focus();
+  }, [modifiers.focused]);
 
-  const { children, ...rest } = props
-  const showPublic = Boolean(modifiers.publicHoliday)
-  const showBank = Boolean(modifiers.bankHoliday)
-  const showMercantile = Boolean(modifiers.mercantileHoliday)
+  const { children, ...rest } = props;
+  const showPublic = Boolean(modifiers.publicHoliday);
+  const showBank = Boolean(modifiers.bankHoliday);
+  const showMercantile = Boolean(modifiers.mercantileHoliday);
+  const showReminder = Boolean(modifiers.reminderDate);
 
   return (
     <Button
@@ -218,7 +223,7 @@ function CalendarDayButton({
       className={cn(
         "data-[public-holiday=true]:bg-accent data-[bank-holiday=true]:bg-accent data-[mercantile-holiday=true]:bg-accent",
         "hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-        "data-[selected-single=true]:bg-accent border data-[selected-single=true]:text-primary-foreground data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 dark:hover:text-accent-foreground flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70 font-black text-xl md:text-3xl",
+        "data-[selected-single=true]:border-primary border data-[selected-single=true]:text-primary data-[range-middle=true]:bg-accent data-[range-middle=true]:text-accent-foreground data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground group-data-[focused=true]/day:border-ring group-data-[focused=true]/day:ring-ring/50 dark:hover:text-accent-foreground flex aspect-square size-auto w-full min-w-(--cell-size) flex-col gap-1 leading-none relative group-data-[focused=true]/day:z-10 group-data-[focused=true]/day:ring-[3px] data-[range-end=true]:rounded-md data-[range-end=true]:rounded-r-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md data-[range-start=true]:rounded-l-md [&>span]:text-xs [&>span]:opacity-70 font-black text-xl md:text-3xl",
         defaultClassNames.day,
         className
       )}
@@ -226,14 +231,21 @@ function CalendarDayButton({
     >
       {children}
       <div className="pointer-events-none absolute inset-x-1 bottom-1 md:bottom-2 flex items-center justify-center gap-1">
-        {showPublic && <span className="h-1.5 w-1.5 md:h-2 md:w-2 [clip-path:polygon(50%_0%,0%_100%,100%_100%)] bg-orange-500" />}
-        {showBank && <span className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-blue-500" />}
+        {showPublic && (
+          <span className="h-1.5 w-1.5 md:h-2 md:w-2 [clip-path:polygon(50%_0%,0%_100%,100%_100%)] bg-orange-500" />
+        )}
+        {showBank && (
+          <span className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-blue-500" />
+        )}
         {showMercantile && (
           <span className="h-1.5 w-1.5 md:h-2 md:w-2 bg-green-500" />
         )}
       </div>
+      {showReminder && (
+        <BellDot className="absolute z-10 -top-1 -right-1 size-3.5 sm:size-4 md:size-6 bg-primary text-foreground rounded-full p-0.5" />
+      )}
     </Button>
-  )
+  );
 }
 
-export { Calendar, CalendarDayButton }
+export { Calendar, CalendarDayButton };

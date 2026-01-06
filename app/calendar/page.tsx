@@ -1,7 +1,7 @@
 "use client";
 import { Calendar } from "@/components/ui/calendar";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { holidays, Holiday } from "@/data/holidays";
+import { holidays } from "@/data/holidays";
 import { Badge } from "@/components/ui/badge";
 import { createClient } from "@/utils/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -56,10 +56,11 @@ export default function Home() {
   const [selectedMonth, setSelectedMonth] = useState<number>(today[1] - 1);
   const [selectedDay, setSelectedDay] = useState<number>(today[0]);
 
-  const [currentHolidays, setCurrentHolidays] = useState<Holiday[]>(() => {
-    const now = new Date();
-    return holidays.filter((holiday) => holiday.month === now.getMonth() + 1);
-  });
+  const currentHolidays = useMemo(() => {
+    return holidays.filter((holiday) => holiday.month === selectedMonth + 1);
+  }, [selectedMonth]);
+
+  const [reminderDates, setReminderDates] = useState<number[]>([]);
 
   const [reminders, setReminders] = useState<Task[]>([]);
 
@@ -99,9 +100,31 @@ export default function Home() {
     [currentYear, supabase, user?.email]
   );
 
+  const fetchReminderDates = useCallback(
+    async (selectedMonth: number) => {
+      supabase
+        .from("dayPlans")
+        .select("day")
+        .eq("email", user?.email || "")
+        .eq("month", selectedMonth + 1)
+        .eq("year", currentYear)
+        .neq("status", "done")
+        .neq("status", "shift")
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("Error fetching reminder dates:", error);
+            return;
+          }
+          const dates = data?.map((item) => item.day) || [];
+          setReminderDates(dates);
+        });
+    },
+    [currentYear, supabase, user?.email]
+  );
+
   useEffect(() => {
-    fetchReminders(selectedDay, selectedMonth + 1, user?.email);
-  }, [fetchReminders, selectedDay, selectedMonth, user?.email]);
+    fetchReminderDates(selectedMonth);
+  }, [fetchReminderDates, selectedMonth]);
 
   useEffect(() => {
     const loadUser = async () => {
@@ -138,16 +161,20 @@ export default function Home() {
 
   const handleNavigation = (month: number) => {
     setSelectedMonth(month);
-
-    const filteredHolidays = holidays.filter((holiday) => {
-      return holiday.month === month + 1;
-    });
-    setCurrentHolidays(filteredHolidays);
   };
 
   const handleDateSelect = async (date?: Date | Date[]) => {
-    if (!date) return;
-    const selectedDate = Array.isArray(date) ? date[0] : date;
+    if (open) {
+      setOpen(false);
+      return;
+    }
+
+    const selectedDate = !date
+      ? new Date(currentYear, selectedMonth, selectedDay)
+      : Array.isArray(date)
+      ? date[0]
+      : date;
+
     const day = selectedDate.getDate();
     const month = selectedDate.getMonth() + 1;
 
@@ -159,7 +186,7 @@ export default function Home() {
 
   return (
     <>
-      <CoverImage />
+      <CoverImage month={selectedMonth} />
       <main className="pt-5 md:pt-21 items-start w-full mx-auto max-w-3xl px-3">
         {loading && <LoadingIcon />}
         <section className="flex flex-col mb-21 gap-7">
@@ -173,6 +200,7 @@ export default function Home() {
               startMonth={new Date(currentYear, 0)}
               endMonth={new Date(currentYear, 11)}
               onSelect={(date) => handleDateSelect(date)}
+              selected={new Date(currentYear, selectedMonth, selectedDay)}
               modifiers={{
                 publicHoliday: (date) =>
                   holidays.some(
@@ -195,6 +223,9 @@ export default function Home() {
                       holiday.date === date.getDate() &&
                       holiday.month === date.getMonth() + 1
                   ),
+                reminderDate: (date) =>
+                  reminderDates.includes(date.getDate()) &&
+                  date.getMonth() === selectedMonth,
               }}
               fixedWeeks={true}
               numberOfMonths={1}
@@ -205,14 +236,14 @@ export default function Home() {
           <div>
             <div className="fixed bottom-4 left-4">
               <Button size="icon" onClick={() => router.push("/task/new")}>
-                <Plus className="size-7" />
+                <Plus className="size-7 text-foreground" />
               </Button>
             </div>
           </div>
-          <Drawer autoFocus open={open} onOpenChange={setOpen}>
-              <DrawerTrigger className="bg-primary fixed bottom-4 right-4 size-9 rounded-md flex items-center justify-center shadow-lg hover:shadow-xl">
-                <ListTodo className="size-7" />
-              </DrawerTrigger>
+          <Drawer autoFocus open={open} onOpenChange={() => handleDateSelect()}>
+            <DrawerTrigger className="bg-primary text-foreground fixed bottom-4 right-4 size-9 rounded-md flex items-center justify-center shadow-lg hover:shadow-xl">
+              <ListTodo className="size-7 text-foreground" />
+            </DrawerTrigger>
             <DrawerContent className="max-w-4xl mx-auto">
               <DrawerHeader className="text-start">
                 <DrawerTitle>Day Plans</DrawerTitle>
@@ -281,12 +312,20 @@ export default function Home() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-center w-full col-span-2">
-                    No Reminders available for this day.
-                  </p>
+                  <>
+                    <p className="text-center w-full">
+                      No Plans available for this day.
+                    </p>
+                    <Button
+                      className="mt-5 mx-auto flex items-center gap-2"
+                      onClick={() => router.push("/task/new")}
+                    >
+                      <ListTodo /> Add New Plan
+                    </Button>
+                  </>
                 )}
               </div>
-              <DrawerClose className="fixed right-3 bottom-3 bg-primary/60 max-w-30 rounded-md px-2 py-2">
+              <DrawerClose className="fixed right-2 top-2 max-w-30 rounded-md p-2">
                 <X />
               </DrawerClose>
             </DrawerContent>
@@ -359,7 +398,10 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
               </div>
-              <Button className="bg-red-500 hover:bg-red-700" onClick={() => handleLogout()}>
+              <Button
+                className="bg-red-500 hover:bg-red-700"
+                onClick={() => handleLogout()}
+              >
                 Sign Out
               </Button>
             </div>

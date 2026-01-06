@@ -1,38 +1,28 @@
-"use client";
-
+interface CoverImageProps {
+  month: number; // 0-11 for Jan-Dec
+}
 import Image from "next/image";
-import { useEffect, useState } from "react";
 
 const images = [
-  "/backgrounds/calendar-cover-1.jpeg",
-  "/backgrounds/calendar-cover-2.jpeg",
-  "/backgrounds/calendar-cover-3.jpeg",
-  "/backgrounds/calendar-cover-4.jpeg",
-  "/backgrounds/calendar-cover-5.jpeg",
-  "/backgrounds/calendar-cover-6.jpeg",
-  "/backgrounds/calendar-cover-7.jpeg",
+  "/backgrounds/calendar-cover-1.jpg",
+  "/backgrounds/calendar-cover-2.jpg",
+  "/backgrounds/calendar-cover-3.jpg",
+  "/backgrounds/calendar-cover-4.jpg",
+  "/backgrounds/calendar-cover-5.jpg",
+  "/backgrounds/calendar-cover-6.jpg",
+  "/backgrounds/calendar-cover-7.jpg",
+  "/backgrounds/calendar-cover-8.jpg",
+  "/backgrounds/calendar-cover-9.jpg",
+  "/backgrounds/calendar-cover-10.jpg",
+  "/backgrounds/calendar-cover-11.jpg",
+  "/backgrounds/calendar-cover-12.jpg",
 ];
 
-const getRandomImage = (imageArray: string[]) => {
-  const randomIndex = Math.floor(Math.random() * imageArray.length);
-  return imageArray[randomIndex];
-};
+export default function CoverImage({month}: CoverImageProps) {
 
-export default function CoverImage() {
-  const [currentImageSrc, setCurrentImageSrc] = useState<string | null>(null);
-
-  useEffect(() => {
-    setCurrentImageSrc(getRandomImage(images));
-  }, []);
-
-  if (!currentImageSrc) {
-    return (
-      <div className="mx-auto w-full md:max-h-[25vh] rounded-none bg-muted" aria-hidden />
-    );
-  }
   return (
     <Image
-      src={currentImageSrc}
+      src={images[month]}
       alt="Calendar cover image"
       width={1365}
       height={768}
